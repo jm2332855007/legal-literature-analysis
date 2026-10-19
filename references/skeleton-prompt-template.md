@@ -1,6 +1,6 @@
 # 骨架卡拆解 Prompt 模板（自包含 · 派 subagent 拆卡时直接引用）
 
-> 用途：派 subagent 精读一篇法学论文、产出论证骨架卡时，把本模板全文贴进 prompt（或让 subagent 先 read 本文件）。
+> 用途：派 subagent 也就是子智能体精读一篇法学论文、产出论证骨架卡时，把本模板全文贴进 prompt（或让 subagent 先 read 本文件）。
 > 为什么自包含：七条失真铁律是 41 篇抽验（8.2% 失真）提炼的；只写"参见 fidelity-pitfalls.md"等于软建议，subagent 不会去读。所以每条铁律在此**用一句话**内嵌，不展开。
 
 ## 骨架卡 JSON 必填字段
