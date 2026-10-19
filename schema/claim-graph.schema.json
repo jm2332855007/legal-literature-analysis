@@ -1,0 +1,100 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Strict claim graph (atomic propositions + citation anchors)",
+  "type": "object",
+  "required": ["id", "title", "discipline", "fully_read", "source", "central_claim_id", "nodes", "edges"],
+  "properties": {
+    "id": {"type": "string", "minLength": 1},
+    "title": {"type": "string", "minLength": 1},
+    "discipline": {"type": "string", "minLength": 1},
+    "fully_read": {"type": "boolean", "const": true},
+    "source": {
+      "type": "object",
+      "required": ["pdf", "paragraph_index", "citations"],
+      "properties": {
+        "pdf": {"type": "string", "description": "原文（相对路径或文件名）"},
+        "paragraph_index": {"type": "string", "description": "相对路径，如 examples/laws-XXXX/laws-XXXX.paragraphs.json"},
+        "citations": {"type": "string", "description": "Relative path to citations.json (cite_self + references)"}
+      }
+    },
+    "central_claim_id": {"type": "string", "const": "C1"},
+    "nodes": {
+      "type": "array",
+      "minItems": 6,
+      "items": {
+        "type": "object",
+        "required": ["id", "type", "text", "source_anchor"],
+        "properties": {
+          "id": {"type": "string"},
+          "type": {
+            "enum": [
+              "problem",
+              "premise",
+              "claim",
+              "evidence_data",
+              "evidence_case",
+              "evidence_statute",
+              "evidence_archive",
+              "evidence_doctrine",
+              "counter_position",
+              "literature_position",
+              "response",
+              "normative_conclusion",
+              "qualifier"
+            ]
+          },
+          "proposition_type": {
+            "enum": ["descriptive", "normative", "definitive", "causal", "evaluative", "interpretive", "balancing"],
+            "description": "命题类型；problem/premise/claim 建议标注（detect_leaps 的 type_leap 依据）"
+          },
+          "stance": {
+            "enum": ["通说", "少数说", "背景文献", "反方", "争议"],
+            "description": "被引者立场（counter_position / literature_position 建议标注）"
+          },
+          "diagnosis": {
+            "enum": ["isolated", "evidence_insufficient"],
+            "description": "节点级诊断标记（弱点如实标出；标 isolated 的孤立节点不判 FAIL）"
+          },
+          "text": {"type": "string", "minLength": 10, "description": "抽象命题（不照抄 quote）"},
+          "source_anchor": {
+            "type": "object",
+            "required": ["page", "paragraph_id", "quote"],
+            "properties": {
+              "page": {"type": "integer", "minimum": 1},
+              "paragraph_id": {"type": "string"},
+              "quote": {"type": "string", "minLength": 4, "description": "原文逐字摘录（≥10 字更佳）"},
+              "cite_id": {
+                "type": "string",
+                "description": "cite_self 指本文；counter_position/literature_position（被引者立场）必须用 references[].id，不得用 cite_self"
+              }
+            }
+          }
+        }
+      }
+    },
+    "edges": {
+      "type": "array",
+      "minItems": 5,
+      "items": {
+        "type": "object",
+        "required": ["from", "to", "relation", "warrant"],
+        "properties": {
+          "from": {"type": "string"},
+          "to": {"type": "string"},
+          "relation": {
+            "enum": [
+              "supports", "attacks", "qualifies", "derives", "explains", "motivates",
+              "constitutes", "grounds", "responds", "illustrates",
+              "balancing", "subsumption", "analogy", "a_contrario", "a_fortiori"
+            ]
+          },
+          "diagnosis": {
+            "enum": ["leap", "gap"],
+            "description": "边级诊断：leap=断言跳步，gap=断裂（中间缺命题）"
+          },
+          "warrant": {"type": "string", "minLength": 6, "description": "真推论依据；禁止与 relation 同名或复述两端"}
+        }
+      }
+    }
+  }
+}
