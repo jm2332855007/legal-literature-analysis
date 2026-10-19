@@ -152,8 +152,12 @@ def main():
 
         # 5. report.md + report.docx
         report_md = os.path.join(out, doc_id + ".report.md")
-        print(run([py, os.path.join(HERE, "build_report.py"), "--graph", graph,
-                   "--image", image, "--out", report_md]).strip())
+        reading_dir = os.path.join(out, doc_id + ".reading")
+        rcmd = [py, os.path.join(HERE, "build_report.py"), "--graph", graph,
+                "--image", image, "--out", report_md]
+        if args.reading and os.path.isdir(reading_dir):
+            rcmd += ["--reading-dir", reading_dir]
+        print(run(rcmd).strip())
         if not args.skip_docx:
             report_docx = os.path.join(out, doc_id + ".report.docx")
             print(run([py, os.path.join(HERE, "md_to_docx.py"), "--md", report_md,

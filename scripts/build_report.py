@@ -100,7 +100,7 @@ def render_chain(nodes):
     return "\n".join(lines).rstrip()
 
 
-def build_report(graph_path, image_path, out_path):
+def build_report(graph_path, image_path, out_path, reading_dir=""):
     g = load_json(graph_path)
     citations = load_json(g["source"]["citations"])
     paragraphs = load_json(g["source"]["paragraph_index"])
@@ -193,6 +193,39 @@ def build_report(graph_path, image_path, out_path):
     L.append("- 页码为 PDF 页序或印刷页，以实际文件为准。")
     L.append("")
 
+    # 附录：阅读/复现训练任务包（本地有 <id>.reading/ 时自动纳入）
+    if reading_dir and os.path.isdir(reading_dir):
+        L.append("## 附录：阅读与复现训练任务包")
+        L.append("")
+        L.append("> 用法：把每个 `.prompt.md` 的提示词交给模型，回答填入「输出槽」即完成一轮；复现训练按第 1→2→3 遍顺序进行。")
+        L.append("")
+        wanted = ["00_README.md", "03_核心贡献.prompt.md", "04_局限与未决.prompt.md",
+                  "05_思维导图.prompt.md", "06_复现训练_第1遍_补结构.md",
+                  "07_复现训练_第2遍_补规范依据.md", "08_复现训练_第3遍_补反方回应.md"]
+        existing = set(os.listdir(reading_dir))
+        for name in wanted:
+            if name not in existing:
+                continue
+            body = open(os.path.join(reading_dir, name), encoding="utf-8").read().strip()
+            if name.endswith(".prompt.md") or name.startswith("06_") or name.startswith("07_") or name.startswith("08_"):
+                title = name.replace(".prompt.md", "").replace(".md", "")
+            else:
+                title = "任务包说明" if name == "00_README.md" else name
+            L.append(f"### {title}")
+            L.append("")
+            L.extend(body.splitlines())
+            L.append("")
+        # 各章精读提示词只列清单，避免正文过长
+        chapters = sorted(n for n in existing if n.startswith("02_逐章精读"))
+        if chapters:
+            L.append("### 逐章精读（按章拆分，见任务包目录）")
+            L.append("")
+            L.append("| 文件 |")
+            L.append("|---|")
+            for ch in chapters:
+                L.append(f"| {ch} |")
+            L.append("")
+
     if fn_defs:
         # 脚注定义不设标题（pandoc 会转成真页下脚注；加标题会在正文留一个空章节）
         for i, text in fn_defs:
@@ -207,9 +240,10 @@ def main():
     ap.add_argument("--graph", required=True)
     ap.add_argument("--image", default="")
     ap.add_argument("--out", required=True)
+    ap.add_argument("--reading-dir", default="", help="阅读/复现任务包目录（自动并入附录）")
     args = ap.parse_args()
     os.makedirs(os.path.dirname(os.path.abspath(args.out)), exist_ok=True)
-    print(json.dumps(build_report(args.graph, args.image, args.out), ensure_ascii=False, indent=2))
+    print(json.dumps(build_report(args.graph, args.image, args.out, args.reading_dir), ensure_ascii=False, indent=2))
 
 
 if __name__ == "__main__":
