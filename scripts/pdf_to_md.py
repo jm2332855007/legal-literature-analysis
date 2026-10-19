@@ -108,6 +108,38 @@ def extract(pdf):
     return pages
 
 
+LATIN = re.compile(r"[A-Za-z]")
+
+
+def _split_page_loose(raw):
+    """外文/排版异常文档的兜底分段：不以中文为门槛（拉丁字母 ≥30 也算有效段）。"""
+    groups = _split_page(raw)
+    if groups:
+        return groups
+    raw = raw.replace("\r", "\n")
+    lines = [l.rstrip() for l in raw.split("\n") if l.strip()]
+    groups, buf = [], []
+    for raw_line in lines:
+        line = clean(raw_line)
+        if not line:
+            continue
+        buf.append(line)
+        joined = " ".join(buf)
+        if len(joined) >= 380 and re.search(r"[.!?;:]$", line):
+            groups.append(" ".join(buf))
+            buf = []
+    if buf:
+        groups.append(" ".join(buf))
+    return [g for g in groups if cjk(g) >= 15 or len(LATIN.findall(g)) >= 30]
+
+
+def extract_loose(pdf):
+    """兜底抽取：分段规则不适用的文档（如外文规范文本），逐页用宽松规则抽。"""
+    import fitz
+    doc = fitz.open(pdf)
+    return [_split_page_loose(doc.load_page(i).get_text()) for i in range(doc.page_count)]
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--pdf", required=True)
@@ -117,6 +149,11 @@ def main():
     args = ap.parse_args()
 
     pages = extract(args.pdf)
+    fallback = False
+    if not any(pages):
+        # 主规则一段未出（如外文规范文档）：启用宽松兜底抽取
+        pages = extract_loose(args.pdf)
+        fallback = any(pages)
     title = args.title
     if not title:
         for items in pages:
@@ -136,6 +173,11 @@ def main():
     for page_no, items in enumerate(pages, 1):
         for text in items:
             first = text.split("\n")[0].strip()
+            if fallback:
+                # 兜底模式：跳过中文标题/摘要/关键词规则，逐条直接收录
+                pid = "P%04d" % (len(paragraphs) + 1)
+                paragraphs.append({"pid": pid, "page": page_no, "section": current, "text": text})
+                continue
             if HEAD1.match(first) or HEAD2.match(first):
                 current = first
                 sections.append({"heading": first, "page": page_no, "level": 1 if HEAD1.match(first) else 2})
@@ -158,7 +200,8 @@ def main():
             paragraphs.append({"pid": pid, "page": page_no, "section": current, "text": text})
 
     md = [f"# {title}", "",
-          f"> 来源 PDF：{os.path.basename(args.pdf)}；页数：{len(pages)}；段落：{len(paragraphs)}", ""]
+          f"> 来源 PDF：{os.path.basename(args.pdf)}；页数：{len(pages)}；段落：{len(paragraphs)}"
+          + ("；**兜底抽取**（主分段规则不适用，按宽松规则逐页抽取）" if fallback else ""), ""]
     if abstract:
         md += ["## 摘要", "", abstract, ""]
     if keywords:
@@ -174,12 +217,14 @@ def main():
 
     para_path = os.path.join(args.out_dir, doc_id + ".paragraphs.json")
     json.dump({"id": doc_id, "title": title, "pdf": os.path.abspath(args.pdf),
-               "source_type": "pdf", "pages": len(pages), "paragraph_count": len(paragraphs),
+               "source_type": "pdf", "extraction": "fallback_loose" if fallback else "standard",
+               "pages": len(pages), "paragraph_count": len(paragraphs),
                "sections": sections, "paragraphs": paragraphs},
               open(para_path, "w", encoding="utf-8", newline="\n"), ensure_ascii=False, indent=2)
 
     struct_path = os.path.join(args.out_dir, doc_id + ".structure.json")
     json.dump({"id": doc_id, "title": title, "pdf": os.path.abspath(args.pdf),
+               "extraction": "fallback_loose" if fallback else "standard",
                "page_count": len(pages), "paragraph_count": len(paragraphs),
                "abstract": abstract, "keywords": keywords, "sections": sections},
               open(struct_path, "w", encoding="utf-8", newline="\n"), ensure_ascii=False, indent=2)
