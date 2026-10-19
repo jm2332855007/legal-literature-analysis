@@ -158,7 +158,8 @@ SKILL.md · README.md · requirements.txt
 references/   claim-graph-standard.md · reading-prompts.md · 术语对照.md · argument-grammar.md …
 assets/       signal-lexicon.json · reading_prompts.json · templates/中国法学_style.docx
 scripts/      pipeline.py · validate_claim_graph.py · build_report.py · extract_footnotes.py …
-examples/     2 个已拆示例（含基准文复现训练实跑）
+examples/     原本有400 个已拆示例（含基准文复现训练实跑）因为版权问题下架
 tests/        单元测试 + 五维审稿测试
 ```
-
+## 交流邮箱
+461582455@qq.com
