@@ -1,0 +1,7 @@
+﻿# 核心依赖（pip install -r requirements.txt）
+PyMuPDF>=1.23      # pdf_to_md.py / legal_metadata.py 读 PDF
+python-docx>=1.1   # docx 读写（pipeline 的 docx 分支、md_to_docx）
+matplotlib>=3.7    # render_claim_graph.py 小图 PNG
+networkx>=3.0      # render_claim_graph.py 布局
+# 外部命令：pandoc（md_to_docx.py 用它转 Word 并生成真实页下脚注）
+#   winget install JohnMacFarlane.Pandoc   或   brew install pandoc

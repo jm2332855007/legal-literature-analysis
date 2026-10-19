@@ -1,0 +1,14 @@
+﻿__pycache__/
+*.pyc
+*.pyo
+.DS_Store
+Thumbs.db
+out/
+*.egg-info/
+.pytest_cache/
+visuals/
+
+examples/ao-shuanghong/
+
+.git.bak*
+
