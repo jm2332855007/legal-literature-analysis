@@ -1,0 +1,84 @@
+{
+  "_conventions": {
+    "relations": ["supports", "attacks", "qualifies", "derives", "explains", "motivates", "constitutes", "grounds", "responds", "illustrates", "balancing", "subsumption", "analogy", "a_contrario", "a_fortiori"],
+    "proposition_types": ["descriptive", "normative", "definitive", "causal", "evaluative", "interpretive", "balancing"],
+    "diagnosis": {"node": ["isolated", "evidence_insufficient"], "edge": ["leap", "gap"]},
+    "stance": ["通说", "少数说", "背景文献", "反方"],
+    "rules": "本文件与 references/claim-graph-standard.md 和 scripts/validate_claim_graph.py 必须同步；拆解完整优先，每千字 1–1.5 节点，不设硬上限"
+  },
+  "id": "laws-XXXX",
+  "title": "论文标题",
+  "discipline": "学科",
+  "fully_read": true,
+  "source": {
+    "pdf": "论文.pdf",
+    "paragraph_index": "examples/laws-XXXX/laws-XXXX.paragraphs.json",
+    "citations": "examples/laws-XXXX/laws-XXXX.citations.json"
+  },
+  "central_claim_id": "C1",
+  "nodes": [
+    {
+      "id": "Q1",
+      "type": "problem",
+      "proposition_type": "descriptive",
+      "text": "文章要解决的问题（一句，抽象命题，不照抄原文）",
+      "source_anchor": {"page": 1, "paragraph_id": "P0001", "quote": "原文短句（≥10字，逐字精确）", "cite_id": "cite_self"}
+    },
+    {
+      "id": "P1",
+      "type": "premise",
+      "proposition_type": "descriptive",
+      "text": "前提一（一句）",
+      "source_anchor": {"page": 1, "paragraph_id": "P0002", "quote": "原文短句", "cite_id": "cite_self"}
+    },
+    {
+      "id": "P2",
+      "type": "premise",
+      "proposition_type": "normative",
+      "text": "前提二（一句）",
+      "source_anchor": {"page": 1, "paragraph_id": "P0003", "quote": "原文短句", "cite_id": "cite_self"}
+    },
+    {
+      "id": "E1",
+      "type": "evidence_statute",
+      "text": "法条证据（一句）",
+      "source_anchor": {"page": 1, "paragraph_id": "P0004", "quote": "原文短句", "cite_id": "cite_self"}
+    },
+    {
+      "id": "L1",
+      "type": "counter_position",
+      "stance": "反方",
+      "text": "反方立场（一句；若引外部观点，cite_id 用 references[].id，不得用 cite_self）",
+      "source_anchor": {"page": 1, "paragraph_id": "P0005", "quote": "原文短句", "cite_id": "ref-external"}
+    },
+    {
+      "id": "L2",
+      "type": "literature_position",
+      "stance": "通说",
+      "text": "文献立场（一句；literature_position 可只作背景/支撑，不强制攻击）",
+      "source_anchor": {"page": 1, "paragraph_id": "P0006", "quote": "原文短句", "cite_id": "ref-external"}
+    },
+    {
+      "id": "C1",
+      "type": "claim",
+      "proposition_type": "definitive",
+      "text": "中心命题（一句，不要复合）",
+      "source_anchor": {"page": 1, "paragraph_id": "P0007", "quote": "原文短句", "cite_id": "cite_self"}
+    },
+    {
+      "id": "N1",
+      "type": "normative_conclusion",
+      "text": "规范/制度结论（一句）",
+      "source_anchor": {"page": 1, "paragraph_id": "P0008", "quote": "原文短句", "cite_id": "cite_self"}
+    }
+  ],
+  "edges": [
+    {"from": "Q1", "to": "C1", "relation": "motivates", "warrant": "问题为什么需要这个命题（真推论依据，禁止复述两端或乞题）"},
+    {"from": "P1", "to": "C1", "relation": "grounds", "warrant": "规范依据如何为命题奠基"},
+    {"from": "P2", "to": "C1", "relation": "supports", "warrant": "前提如何支持命题"},
+    {"from": "E1", "to": "P1", "relation": "supports", "warrant": "法条如何支撑前提"},
+    {"from": "L1", "to": "C1", "relation": "attacks", "warrant": "反方与命题在哪一点冲突"},
+    {"from": "L2", "to": "P1", "relation": "qualifies", "warrant": "文献立场限定前提的哪一部分（注意方向：源→被限定方）"},
+    {"from": "C1", "to": "N1", "relation": "derives", "warrant": "从命题到规范结论的中间步骤（不得压掉中间命题）"}
+  ]
+}
